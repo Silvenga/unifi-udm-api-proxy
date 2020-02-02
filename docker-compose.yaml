@@ -1,0 +1,11 @@
+version: '2.1'
+services:
+  unifi-udm-api-proxy:
+    build:
+      context: .
+      dockerfile: src/UdmApi.Proxy/Dockerfile
+    ports:
+      - 5000:80
+    environment:
+      UDM__URI: https://192.168.0.1
+    restart: always
