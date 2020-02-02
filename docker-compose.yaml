@@ -5,7 +5,8 @@ services:
       context: .
       dockerfile: src/UdmApi.Proxy/Dockerfile
     ports:
-      - 5000:80
+      - 5000:5000
     environment:
       UDM__URI: https://192.168.0.1
+      ASPNETCORE_URLS: https://*:5000
     restart: always
