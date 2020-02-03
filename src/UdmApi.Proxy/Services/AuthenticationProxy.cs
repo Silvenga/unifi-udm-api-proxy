@@ -24,10 +24,23 @@ namespace UdmApi.Proxy.Services
 
         public void ModifyRequest(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
         {
-            originalRequest.Path.StartsWithSegments("/api/auth", out var remaining);
+            string rewritePath;
+            switch (originalRequest.Path)
+            {
+                case "/api/auth":
+                    rewritePath = "/api/auth/login";
+                    break;
+                case "/api/auth/access-key":
+                    rewritePath = "/proxy/protect/api/bootstrap";
+                    break;
+                default:
+                    rewritePath = originalRequest.Path;
+                    break;
+            }
+
             var builder = new UriBuilder(_udmHost)
             {
-                Path = "/api/auth" + remaining,
+                Path = rewritePath,
                 Query = originalRequest.QueryString.ToString()
             };
 
