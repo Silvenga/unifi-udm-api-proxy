@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace UdmApi.Proxy
 
             _httpClient = new HttpClient(handler, true)
             {
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(10)
             };
         }
 
@@ -51,6 +52,16 @@ namespace UdmApi.Proxy
                 //proxyRequest.Headers.Host = proxyRequest.RequestUri.Host;
 
                 _logger.LogInformation($"{context.Request.Path}: Proxing request to '{proxyRequest.Method} {proxyRequest.RequestUri}'.");
+
+                if (_logger.IsEnabled(LogLevel.Trace))
+                {
+                    var headers = proxyRequest.Headers.Concat(proxyRequest.Content?.Headers
+                                                              ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>());
+                    foreach (var (key, value) in headers)
+                    {
+                        _logger.LogTrace($"Proxy request header '{key}': {string.Join(", ", value)}");
+                    }
+                }
 
                 // Send Request
                 using var responseMessage = await _httpClient.SendAsync(proxyRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
