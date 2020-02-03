@@ -31,6 +31,10 @@ namespace UdmApi.Proxy.Services
                 Query = originalRequest.QueryString.ToString()
             };
 
+            // Gives a 404 when the token cookie is sent for some reason.
+            proxyRequest.Headers.Remove("Cookie");
+            proxyRequest.Content?.Headers.Remove("Cookie");
+
             proxyRequest.RequestUri = builder.Uri;
 
             ProxyHelper.CopyAuthorizationHeaderToCookies(originalRequest, proxyRequest);

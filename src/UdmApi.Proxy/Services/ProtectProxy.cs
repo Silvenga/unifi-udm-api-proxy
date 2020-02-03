@@ -33,6 +33,10 @@ namespace UdmApi.Proxy.Services
                 Query = originalRequest.QueryString.ToString()
             };
 
+            // When cookies are sent, the server timeouts.
+            proxyRequest.Headers.Remove("Cookie");
+            proxyRequest.Content?.Headers.Remove("Cookie");
+
             proxyRequest.RequestUri = builder.Uri;
 
             if (originalRequest.Headers.TryGetValue("Authorization", out var authorizationHeader)

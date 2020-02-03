@@ -18,7 +18,7 @@ namespace UdmApi.Proxy
         private readonly IServiceProxy _serviceProxy;
         private readonly ILogger<ProxyMiddleware<T>> _logger;
 
-        public ProxyMiddleware(RequestDelegate nextMiddleware, T serviceProxy, ILogger< ProxyMiddleware<T>> logger)
+        public ProxyMiddleware(RequestDelegate nextMiddleware, T serviceProxy, ILogger<ProxyMiddleware<T>> logger)
         {
             _nextMiddleware = nextMiddleware;
             _serviceProxy = serviceProxy;
@@ -30,7 +30,13 @@ namespace UdmApi.Proxy
                 handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
             }
 
-            _httpClient = new HttpClient(handler);
+            handler.AllowAutoRedirect = false;
+            handler.UseCookies = false;
+
+            _httpClient = new HttpClient(handler, true)
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
         }
 
         public async Task Invoke(HttpContext context)
@@ -42,7 +48,7 @@ namespace UdmApi.Proxy
                 // Build Request
                 var proxyRequest = CreateProxyRequest(context);
                 _serviceProxy.ModifyRequest(context.Request, proxyRequest);
-                proxyRequest.Headers.Host = proxyRequest.RequestUri.Host;
+                //proxyRequest.Headers.Host = proxyRequest.RequestUri.Host;
 
                 _logger.LogInformation($"{context.Request.Path}: Proxing request to '{proxyRequest.RequestUri}'.");
 
@@ -60,7 +66,7 @@ namespace UdmApi.Proxy
                 await contentStream.CopyToAsync(context.Response.Body);
 
                 _logger.LogInformation($"{context.Request.Path}: Proxied with the result of '{context.Response.StatusCode}'.");
-                
+
                 return;
             }
 
@@ -91,11 +97,18 @@ namespace UdmApi.Proxy
             {
                 var streamContent = new StreamContent(context.Request.Body);
                 requestMessage.Content = streamContent;
-            }
 
-            foreach (var (key, value) in context.Request.Headers)
+                foreach (var (key, value) in context.Request.Headers)
+                {
+                    requestMessage.Content.Headers.TryAddWithoutValidation(key, value.ToArray());
+                }
+            }
+            else
             {
-                requestMessage.Content?.Headers.TryAddWithoutValidation(key, value.ToArray());
+                foreach (var (key, value) in context.Request.Headers)
+                {
+                    requestMessage.Headers.TryAddWithoutValidation(key, value.ToArray());
+                }
             }
         }
 
