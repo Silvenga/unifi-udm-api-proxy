@@ -9,5 +9,4 @@ services:
     environment:
       UDM__URI: https://192.168.0.1
       ASPNETCORE_URLS: https://*:5000
-      LOGGING__LOGLEVEL__DEFAULT: Trace
     restart: always
