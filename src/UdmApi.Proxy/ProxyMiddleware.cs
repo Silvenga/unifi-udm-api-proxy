@@ -50,7 +50,7 @@ namespace UdmApi.Proxy
                 _serviceProxy.ModifyRequest(context.Request, proxyRequest);
                 //proxyRequest.Headers.Host = proxyRequest.RequestUri.Host;
 
-                _logger.LogInformation($"{context.Request.Path}: Proxing request to '{proxyRequest.RequestUri}'.");
+                _logger.LogInformation($"{context.Request.Path}: Proxing request to '{proxyRequest.Method} {proxyRequest.RequestUri}'.");
 
                 // Send Request
                 using var responseMessage = await _httpClient.SendAsync(proxyRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
