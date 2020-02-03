@@ -9,14 +9,17 @@ ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/self-signed.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+
+RUN dotnet dev-certs https --clean \
+    && dotnet dev-certs https -ep /app/publish/self-signed.pfx -p password
+
 WORKDIR /src
 COPY ["src/UdmApi.Proxy/UdmApi.Proxy.csproj", "src/UdmApi.Proxy/"]
 RUN dotnet restore "src/UdmApi.Proxy/UdmApi.Proxy.csproj"
+
 COPY . .
 WORKDIR "/src/src/UdmApi.Proxy"
 RUN dotnet build "UdmApi.Proxy.csproj" -c Release -o /app/build
-RUN dotnet dev-certs https --clean \
-    && dotnet dev-certs https -ep /app/publish/self-signed.pfx -p password
 
 FROM build AS publish
 RUN dotnet publish "UdmApi.Proxy.csproj" -c Release -o /app/publish
