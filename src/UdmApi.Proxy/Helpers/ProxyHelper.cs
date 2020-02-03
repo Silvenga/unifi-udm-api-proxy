@@ -28,7 +28,7 @@ namespace UdmApi.Proxy.Helpers
                 var token = tokenCookie?.Value;
                 if (token != null)
                 {
-                    response.Headers.Add("Authorization", $"Bearer {token}");
+                    response.Headers.Add("Authorization", token.ToString());
                 }
             }
         }
