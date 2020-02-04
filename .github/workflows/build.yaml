@@ -1,0 +1,13 @@
+name: "Build"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: docker build --pull -t unifi-udm-api-proxy:latest -f src/UdmApi.Proxy/Dockerfile .
