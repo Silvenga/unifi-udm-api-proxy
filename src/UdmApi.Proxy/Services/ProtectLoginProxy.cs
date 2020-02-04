@@ -4,43 +4,30 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using UdmApi.Proxy.Helpers;
+using UdmApi.Proxy.Sessions;
 
 namespace UdmApi.Proxy.Services
 {
-    public class AuthenticationProxy : IServiceProxy
+    public class ProtectLoginProxy : IServiceProxy
     {
         private readonly Uri _udmHost;
+        private readonly SsoSessionCache _sessionCache;
 
-        // https://192.168.0.1/proxy/protect/api/bootstrap
-
-        public AuthenticationProxy(IConfiguration configuration)
+        public ProtectLoginProxy(IConfiguration configuration, SsoSessionCache sessionCache)
         {
             _udmHost = configuration.GetValue<Uri>("Udm:Uri");
+            _sessionCache = sessionCache;
         }
 
         public bool DisableTlsVerification() => true;
 
-        public bool Matches(HttpRequest request) => request.Path.StartsWithSegments("/api/auth");
+        public bool Matches(HttpRequest request) => request.Path.Equals("/api/auth");
 
         public void ModifyRequest(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
         {
-            string rewritePath;
-            switch (originalRequest.Path)
-            {
-                case "/api/auth":
-                    rewritePath = "/api/auth/login";
-                    break;
-                case "/api/auth/access-key":
-                    rewritePath = "/proxy/protect/api/bootstrap";
-                    break;
-                default:
-                    rewritePath = originalRequest.Path;
-                    break;
-            }
-
             var builder = new UriBuilder(_udmHost)
             {
-                Path = rewritePath,
+                Path = "/api/auth/login",
                 Query = originalRequest.QueryString.ToString()
             };
 
@@ -49,8 +36,6 @@ namespace UdmApi.Proxy.Services
             proxyRequest.Content?.Headers.Remove("Cookie");
 
             proxyRequest.RequestUri = builder.Uri;
-
-            ProxyHelper.CopyAuthorizationHeaderToCookies(originalRequest, proxyRequest);
         }
 
         public void ModifyResponseBody(HttpRequest originalRequest, Stream responseBody)
@@ -59,7 +44,11 @@ namespace UdmApi.Proxy.Services
 
         public void ModifyResponse(HttpRequest originalRequest, HttpResponse response)
         {
-            ProxyHelper.CopyTokenCookieToAuthorizationHeader(response);
+            if (response.TryGetSetCookeToken(out var token))
+            {
+                _sessionCache.Add(token);
+                response.Headers.Add("Authorization", token);
+            }
         }
     }
 }

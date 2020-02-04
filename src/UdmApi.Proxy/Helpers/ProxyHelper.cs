@@ -9,27 +9,48 @@ namespace UdmApi.Proxy.Helpers
 {
     public static class ProxyHelper
     {
-        public static void CopyAuthorizationHeaderToCookies(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
+        public static bool TryGetAuthorizationHeader(this HttpRequest request, out string token)
         {
-            if (originalRequest.Headers.TryGetValue("Authorization", out var authorizationHeader)
+            token = default;
+
+            if (request.Headers.TryGetValue("Authorization", out var authorizationHeader)
                 && AuthenticationHeaderValue.TryParse(authorizationHeader[0], out var authorizationHeaderValue))
             {
-                var token = authorizationHeaderValue.Parameter;
+                token = authorizationHeaderValue.Parameter;
+            }
+
+            return token != default;
+        }
+
+        public static void CopyAuthorizationHeaderToCookies(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
+        {
+            if (originalRequest.TryGetAuthorizationHeader(out var token))
+            {
                 proxyRequest.Headers.Add("Cookie", $"TOKEN={token}");
             }
         }
 
-        public static void CopyTokenCookieToAuthorizationHeader(HttpResponse response)
+        public static bool TryGetSetCookeToken(this HttpResponse response, out string token)
         {
             if (response.Headers.TryGetValue("Set-Cookie", out var cookieHeader)
                 && CookieHeaderValue.TryParseList(cookieHeader, out var cookies))
             {
                 var tokenCookie = cookies.SingleOrDefault(x => x.Name.Equals("TOKEN", StringComparison.OrdinalIgnoreCase));
-                var token = tokenCookie?.Value;
-                if (token != null)
-                {
-                    response.Headers.Add("Authorization", token.ToString());
-                }
+                token = tokenCookie?.Value.ToString();
+            }
+            else
+            {
+                token = default;
+            }
+
+            return token != default;
+        }
+
+        public static void CopyTokenCookieToAuthorizationHeader(HttpResponse response)
+        {
+            if (response.TryGetSetCookeToken(out var token))
+            {
+                response.Headers.Add("Authorization", token);
             }
         }
     }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UdmApi.Proxy.Helpers;
 using UdmApi.Proxy.Services;
+using UdmApi.Proxy.Sessions;
 
 namespace UdmApi.Proxy
 {
@@ -11,8 +12,11 @@ namespace UdmApi.Proxy
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<AuthenticationProxy>();
+            services.AddTransient<ProtectLoginProxy>();
+            services.AddTransient<ProtectAccessKeyProxy>();
             services.AddTransient<ProtectProxy>();
+
+            services.AddSingleton<SsoSessionCache>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -22,7 +26,8 @@ namespace UdmApi.Proxy
                 app.UseDeveloperExceptionPage();
             }
 
-            app.AddServiceProxy<AuthenticationProxy>();
+            app.AddServiceProxy<ProtectLoginProxy>();
+            app.AddServiceProxy<ProtectAccessKeyProxy>();
             app.AddServiceProxy<ProtectProxy>();
         }
     }

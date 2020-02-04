@@ -8,12 +8,12 @@ using UdmApi.Proxy.Sessions;
 
 namespace UdmApi.Proxy.Services
 {
-    public class ProtectProxy : IServiceProxy
+    public class ProtectAccessKeyProxy : IServiceProxy
     {
         private readonly Uri _udmHost;
         private readonly SsoSessionCache _sessionCache;
 
-        public ProtectProxy(IConfiguration configuration, SsoSessionCache sessionCache)
+        public ProtectAccessKeyProxy(IConfiguration configuration, SsoSessionCache sessionCache)
         {
             _udmHost = configuration.GetValue<Uri>("Udm:Uri");
             _sessionCache = sessionCache;
@@ -23,19 +23,17 @@ namespace UdmApi.Proxy.Services
 
         public bool Matches(HttpRequest request) => request.TryGetAuthorizationHeader(out var currentToken) // Only handled active sessions that we know about.
                                                     && _sessionCache.TryGet(currentToken, out _)
-                                                    && request.Path.StartsWithSegments("/api")
-                                                    && !request.Path.StartsWithSegments("/api/auth");
+                                                    && request.Path.Equals("/api/auth/access-key");
 
         public void ModifyRequest(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
         {
-            originalRequest.Path.StartsWithSegments("/api", out var remaining);
             var builder = new UriBuilder(_udmHost)
             {
-                Path = "/proxy/protect/api" + remaining,
+                Path = "/proxy/protect/api/bootstrap",
                 Query = originalRequest.QueryString.ToString()
             };
 
-            // When cookies are sent, the server timeouts.
+            // Gives a 404 when the token cookie is sent for some reason.
             proxyRequest.Headers.Remove("Cookie");
             proxyRequest.Content?.Headers.Remove("Cookie");
 
