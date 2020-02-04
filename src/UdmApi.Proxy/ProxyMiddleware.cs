@@ -59,7 +59,7 @@ namespace UdmApi.Proxy
                                                               ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>());
                     foreach (var (key, value) in headers)
                     {
-                        _logger.LogTrace($"Proxy request header '{key}': {string.Join(", ", value)}");
+                        _logger.LogTrace($"{context.Request.Path} Proxy request header '{key}': {string.Join(", ", value)}");
                     }
                 }
 

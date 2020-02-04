@@ -29,6 +29,8 @@ namespace UdmApi.Proxy
             app.AddServiceProxy<ProtectLoginProxy>();
             app.AddServiceProxy<ProtectAccessKeyProxy>();
             app.AddServiceProxy<ProtectProxy>();
+
+            app.UseMiddleware<FallbackMiddleware>();
         }
     }
 }
