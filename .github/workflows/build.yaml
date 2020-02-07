@@ -27,3 +27,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         auto_tag: true
+
+    - name: Publish Latest (On Release Tags)
+      uses: jerray/publish-docker-action@v1.0.3
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        file: src/UdmApi.Proxy/Dockerfile
+        path: .
+        repository: silvenga/unifi-udm-api-proxy
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        tag: latest
