@@ -12,6 +12,8 @@ namespace UdmApi.Proxy
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHealthChecks();
+
             services.AddTransient<ProtectLoginProxy>();
             services.AddTransient<ProtectAccessKeyProxy>();
             services.AddTransient<ProtectProxy>();
@@ -25,6 +27,8 @@ namespace UdmApi.Proxy
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseHealthChecks("/healthcheck");
 
             app.AddServiceProxy<ProtectLoginProxy>();
             app.AddServiceProxy<ProtectAccessKeyProxy>();

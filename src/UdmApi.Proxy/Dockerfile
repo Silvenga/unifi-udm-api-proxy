@@ -8,6 +8,8 @@ ENV ASPNETCORE_URLS=https://+;http://+
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/self-signed.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
 
+HEALTHCHECK --interval=5s --timeout=10s --retries=3 CMD curl --fail http://localhost:80/healthcheck || exit 1
+
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 
 RUN dotnet dev-certs https --clean \
