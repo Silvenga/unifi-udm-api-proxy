@@ -21,7 +21,8 @@ namespace UdmApi.Proxy.Services
 
         public bool DisableTlsVerification() => true;
 
-        public bool Matches(HttpRequest request) => request.Path.Equals("/api/auth");
+        public bool Matches(HttpRequest request) => request.Path.Equals("/api/auth") 
+                                                    || request.Path.Equals("/api/auth/login");
 
         public void ModifyRequest(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
         {
