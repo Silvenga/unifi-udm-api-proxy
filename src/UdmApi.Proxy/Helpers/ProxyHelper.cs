@@ -22,6 +22,18 @@ namespace UdmApi.Proxy.Helpers
             return token != default;
         }
 
+        public static bool TryGetAccessKeyQueryString(this HttpRequest request, out string token)
+        {
+            token = default;
+
+            if (request.Query.TryGetValue("accessKey", out var stringValues))
+            {
+                token = stringValues.FirstOrDefault();
+            }
+
+            return token != default;
+        }
+
         public static void CopyAuthorizationHeaderToCookies(HttpRequest originalRequest, HttpRequestMessage proxyRequest)
         {
             if (originalRequest.TryGetAuthorizationHeader(out var token))

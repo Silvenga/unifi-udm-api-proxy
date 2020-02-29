@@ -3,8 +3,6 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using UdmApi.Proxy.Helpers;
 using UdmApi.Proxy.Sessions;
 
@@ -23,8 +21,9 @@ namespace UdmApi.Proxy.Services
 
         public bool DisableTlsVerification() => true;
 
-        public bool Matches(HttpRequest request) => request.TryGetAuthorizationHeader(out var currentToken) // Only handled active sessions that we know about.
-                                                    && _sessionCache.TryGet(currentToken, out _)
+        public bool Matches(HttpRequest request) => (request.TryGetAuthorizationHeader(out var token) // Only handled active sessions that we know about.
+                                                     || request.TryGetAccessKeyQueryString(out token))
+                                                    && _sessionCache.TryGet(token, out _)
                                                     && request.Path.StartsWithSegments("/api")
                                                     && !request.Path.StartsWithSegments("/api/auth");
 
@@ -43,7 +42,8 @@ namespace UdmApi.Proxy.Services
 
             proxyRequest.RequestUri = builder.Uri;
 
-            if (originalRequest.TryGetAuthorizationHeader(out var token)
+            if ((originalRequest.TryGetAuthorizationHeader(out var token) 
+                 || originalRequest.TryGetAccessKeyQueryString(out token))
                 && _sessionCache.TryGet(token, out var currentToken))
             {
                 proxyRequest.Headers.Add("Cookie", $"TOKEN={currentToken}");

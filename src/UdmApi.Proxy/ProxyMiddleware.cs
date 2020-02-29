@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -61,9 +62,17 @@ namespace UdmApi.Proxy
 
                 _serviceProxy.ModifyResponse(context.Request, context.Response);
 
-                var contentStream = await responseMessage.Content.ReadAsStreamAsync();
-                _serviceProxy.ModifyResponseBody(context.Request, context.Response, contentStream);
-                await contentStream.CopyToAsync(context.Response.Body);
+                await using (var contentStream = await responseMessage.Content.ReadAsStreamAsync())
+                {
+                    var memoryStream = new MemoryStream();
+                    await contentStream.CopyToAsync(memoryStream);
+                    _serviceProxy.ModifyResponseBody(context.Request, context.Response, memoryStream);
+
+                    memoryStream.Position = 0;
+                    await memoryStream.CopyToAsync(context.Response.Body);
+                }
+
+                context.Response.ContentLength = null;
 
                 _logger.LogInformation($"{context.Request.Path}: Proxied with the result of '{context.Response.StatusCode}'.");
 
