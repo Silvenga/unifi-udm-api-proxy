@@ -2,7 +2,14 @@
 
 namespace UdmApi.Proxy.Sessions
 {
-    public class SsoSessionCache
+    public interface ISsoSessionCache
+    {
+        bool TryGet(string token, out string currentToken);
+        void Update(string token, string currentToken);
+        void Add(string token);
+    }
+
+    public class SsoSessionCache : ISsoSessionCache
     {
         private readonly ConcurrentDictionary<string, string> _sessions = new ConcurrentDictionary<string, string>();
 

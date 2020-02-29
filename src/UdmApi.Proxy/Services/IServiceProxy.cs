@@ -10,7 +10,7 @@ namespace UdmApi.Proxy.Services
 
         void ModifyRequest(HttpRequest originalRequest, HttpRequestMessage proxyRequest);
 
-        void ModifyResponseBody(HttpRequest originalRequest, Stream responseBody);
+        void ModifyResponseBody(HttpRequest originalRequest, HttpResponse contextResponse, Stream responseBody);
 
         void ModifyResponse(HttpRequest originalRequest, HttpResponse response);
 

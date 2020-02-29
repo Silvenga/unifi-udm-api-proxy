@@ -18,7 +18,8 @@ namespace UdmApi.Proxy
             services.AddTransient<ProtectAccessKeyProxy>();
             services.AddTransient<ProtectProxy>();
 
-            services.AddSingleton<SsoSessionCache>();
+            services.AddSingleton<IProxyHttpClientFactory, ProxyHttpClientFactory>();
+            services.AddSingleton<ISsoSessionCache, SsoSessionCache>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

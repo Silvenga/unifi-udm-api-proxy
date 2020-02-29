@@ -3,6 +3,8 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UdmApi.Proxy.Helpers;
 using UdmApi.Proxy.Sessions;
 
@@ -11,9 +13,9 @@ namespace UdmApi.Proxy.Services
     public class ProtectProxy : IServiceProxy
     {
         private readonly Uri _udmHost;
-        private readonly SsoSessionCache _sessionCache;
+        private readonly ISsoSessionCache _sessionCache;
 
-        public ProtectProxy(IConfiguration configuration, SsoSessionCache sessionCache)
+        public ProtectProxy(IConfiguration configuration, ISsoSessionCache sessionCache)
         {
             _udmHost = configuration.GetValue<Uri>("Udm:Uri");
             _sessionCache = sessionCache;
@@ -48,7 +50,7 @@ namespace UdmApi.Proxy.Services
             }
         }
 
-        public void ModifyResponseBody(HttpRequest originalRequest, Stream responseBody)
+        public void ModifyResponseBody(HttpRequest originalRequest, HttpResponse contextResponse, Stream responseBody)
         {
         }
 

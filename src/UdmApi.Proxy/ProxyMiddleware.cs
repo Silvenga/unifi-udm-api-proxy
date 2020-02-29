@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
+using UdmApi.Proxy.Helpers;
 using UdmApi.Proxy.Services;
 
 namespace UdmApi.Proxy
@@ -19,25 +20,13 @@ namespace UdmApi.Proxy
         private readonly IServiceProxy _serviceProxy;
         private readonly ILogger<ProxyMiddleware<T>> _logger;
 
-        public ProxyMiddleware(RequestDelegate nextMiddleware, T serviceProxy, ILogger<ProxyMiddleware<T>> logger)
+        public ProxyMiddleware(RequestDelegate nextMiddleware, T serviceProxy, ILogger<ProxyMiddleware<T>> logger, IProxyHttpClientFactory clientFactory)
         {
             _nextMiddleware = nextMiddleware;
             _serviceProxy = serviceProxy;
             _logger = logger;
-
-            var handler = new HttpClientHandler();
-            if (serviceProxy.DisableTlsVerification())
-            {
-                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
-            }
-
-            handler.AllowAutoRedirect = false;
-            handler.UseCookies = false;
-
-            _httpClient = new HttpClient(handler, true)
-            {
-                Timeout = TimeSpan.FromSeconds(10)
-            };
+            
+            _httpClient = clientFactory.Create(serviceProxy.DisableTlsVerification());
         }
 
         public async Task Invoke(HttpContext context)
@@ -73,7 +62,7 @@ namespace UdmApi.Proxy
                 _serviceProxy.ModifyResponse(context.Request, context.Response);
 
                 var contentStream = await responseMessage.Content.ReadAsStreamAsync();
-                _serviceProxy.ModifyResponseBody(context.Request, contentStream);
+                _serviceProxy.ModifyResponseBody(context.Request, context.Response, contentStream);
                 await contentStream.CopyToAsync(context.Response.Body);
 
                 _logger.LogInformation($"{context.Request.Path}: Proxied with the result of '{context.Response.StatusCode}'.");
