@@ -46,9 +46,13 @@ namespace UdmApi.Proxy.Services
 
             if ((originalRequest.TryGetAuthorizationHeader(out var token)
                  || originalRequest.TryGetAccessKeyQueryString(out token))
-                && _sessionCache.TryGet(token, out var currentToken))
+                && _sessionCache.TryGet(token, out var currentToken, out var csrfToken))
             {
                 proxyRequest.Headers.Add("Cookie", $"TOKEN={currentToken}");
+                if (!string.IsNullOrWhiteSpace(csrfToken))
+                {
+                    proxyRequest.Headers.Add("X-Csrf-Token", csrfToken);
+                }
             }
         }
 
