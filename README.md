@@ -1,5 +1,9 @@
 # unifi-udm-api-proxy
 
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/silvenga/unifi-udm-api-proxy?label=docker%20hub&sort=semver&cacheSeconds=3600&logo=Docker&logoColor=WhiteSmoke)](https://hub.docker.com/r/silvenga/unifi-udm-api-proxy)
+![Build](https://github.com/Silvenga/unifi-udm-api-proxy/workflows/Build/badge.svg)
+[![GitHub](https://img.shields.io/github/license/Silvenga/unifi-udm-api-proxy?cacheSeconds=3600)](https://github.com/Silvenga/unifi-udm-api-proxy/blob/master/LICENSE)
+
 A compatibility shim to support accessing the new UnifiOs API.
 
 The `unifi-udm-api-proxy` can be used to provide backwards compatibility between projects that utilize the unofficial Unifi/Protect api's on newer UnifiOs based devices (the UDM/UDMP) - without modifying existing clients.
