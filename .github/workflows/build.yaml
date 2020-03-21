@@ -11,29 +11,49 @@ jobs:
   build:
     strategy:
       matrix:
-        build_image:
-          - mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic-arm64v8
-          - mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic-arm32v7
-          - mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic
+        arch:
+          - image: mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic-arm64v8
+            tag_suffix: -arm64v8
+          - image: mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic-arm32v7
+            tag_suffix: -arm32v7
+          - image: mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic
+            tag_suffix: ""
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v1
 
     - name: Build
-      run: docker build --pull -f src/UdmApi.Proxy/Dockerfile --cache-from silvenga/unifi-udm-api-proxy:latest --build-arg BUILD_IMAGE=${{ matrix.build_image }} .
+      run: docker build --pull -f src/UdmApi.Proxy/Dockerfile --cache-from silvenga/unifi-udm-api-proxy:latest --build-arg BUILD_IMAGE=${{ matrix.arch.image }} .
 
-    - name: Publish (On Release Tags)
-      uses: jerray/publish-docker-action@v1.0.4
+    - name: Create Version (On Release Tags)
       if: startsWith(github.ref, 'refs/tags/')
-      with:
-        file: src/UdmApi.Proxy/Dockerfile
-        path: .
-        build_args: BUILD_IMAGE=${{ matrix.build_image }}
-        repository: silvenga/unifi-udm-api-proxy
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        auto_tag: true
+      run: |
+        $ref = '${{ github.ref }}'
+        $suffix = '${{ matrix.arch.tag_suffix }}'
+
+        $tag = ($ref -split '/' | Select-Object -Last 1)
+        $version = $tag.SubString(1)
+
+        $versionParts = $version -split "\."
+        $major = $versionParts[0]
+        $minor = $versionParts[1]
+        $patch = $versionParts[2]
+
+        Write-Host "Got version '$major.$minor.$patch'."
+
+        $imageTags = @(
+            "$major.$minor.$patch$suffix",
+            "$major.$minor$suffix",
+            "$major$suffix",
+            "latest$suffix"
+        ) 
+
+        $imageTagsList = $imageTags -join ","
+
+        Write-Host "Built tags list: '$imageTagsList'."
+        Write-Host "::set-env name=GENERATED_TAGS::$imageTagsList"
+      shell: pwsh
 
     - name: Publish Latest (On Release Tags)
       uses: jerray/publish-docker-action@v1.0.4
@@ -41,8 +61,8 @@ jobs:
       with:
         file: src/UdmApi.Proxy/Dockerfile
         path: .
-        build_args: BUILD_IMAGE=${{ matrix.build_image }}
+        build_args: BUILD_IMAGE=${{ matrix.arch.image }}
         repository: silvenga/unifi-udm-api-proxy
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        tag: latest
+        tags: ${{ env.GENERATED_TAGS }}
