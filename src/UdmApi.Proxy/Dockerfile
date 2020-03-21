@@ -1,6 +1,6 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+ARG BUILD_IMAGE=mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+FROM ${BUILD_IMAGE} AS base
 WORKDIR /app
 EXPOSE 80
 
@@ -10,7 +10,7 @@ ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
 
 HEALTHCHECK --interval=5s --timeout=10s --retries=3 CMD curl --fail http://localhost:80/healthcheck || exit 1
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-bionic AS build
 
 RUN dotnet dev-certs https --clean \
     && dotnet dev-certs https -ep /app/publish/self-signed.pfx -p password
