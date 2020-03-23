@@ -2,10 +2,12 @@ ARG BUILD_IMAGE=mcr.microsoft.com/dotnet/core/aspnet:3.1-bionic
 
 FROM ${BUILD_IMAGE} AS base
 WORKDIR /app
+
+ENV ASPNETCORE_URLS=https://+;http://+;https://+:7443
 EXPOSE 80
 EXPOSE 443
+EXPOSE 7443
 
-ENV ASPNETCORE_URLS=https://+;http://+
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/self-signed.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
 ENV DATABASE=/data/data.db
