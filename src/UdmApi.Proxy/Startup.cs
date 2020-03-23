@@ -32,7 +32,7 @@ namespace UdmApi.Proxy
             services.AddTransient<ProtectCameraProxy>();
 
             services.AddSingleton<IProxyHttpClientFactory, ProxyHttpClientFactory>();
-            services.AddSingleton<ISsoSessionCache, MemorySsoSessionCache>();
+            services.AddSingleton<ISsoSessionCache, DatabaseSsoSessionCache>();
 
             services.AddDbContext<ApplicationContext>(
                 options =>

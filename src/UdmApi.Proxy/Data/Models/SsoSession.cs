@@ -6,6 +6,8 @@ namespace UdmApi.Proxy.Data.Models
     {
         public int Id { get; set; }
 
+        // TODO Should be unique and indexed.
+
         public string OriginalToken { get; set; }
 
         public string CurrentToken { get; set; }

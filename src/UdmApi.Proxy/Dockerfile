@@ -8,6 +8,9 @@ EXPOSE 443
 ENV ASPNETCORE_URLS=https://+;http://+
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/self-signed.pfx
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=password
+ENV DATABASE=/data/data.db
+
+VOLUME [ "/data" ]
 
 HEALTHCHECK --interval=5s --timeout=10s --retries=3 CMD curl --fail http://localhost:80/healthcheck || exit 1
 
