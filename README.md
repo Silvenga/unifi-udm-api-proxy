@@ -1,4 +1,4 @@
-# unifi-udm-api-proxy
+# Unifi UDM API Proxy
 
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/silvenga/unifi-udm-api-proxy?label=docker%20hub&sort=semver&cacheSeconds=3600&logo=Docker&logoColor=WhiteSmoke)](https://hub.docker.com/r/silvenga/unifi-udm-api-proxy)
 [![Build](https://github.com/Silvenga/unifi-udm-api-proxy/workflows/Build/badge.svg)](https://github.com/Silvenga/unifi-udm-api-proxy/actions)
