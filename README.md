@@ -8,6 +8,8 @@ A compatibility shim to support accessing the new UnifiOs API.
 
 The `unifi-udm-api-proxy` can be used to provide backwards compatibility between projects that utilize the unofficial Unifi/Protect api's on newer UnifiOs based devices (the UDM/UDMP) - without modifying existing clients.
 
+Also checkout the Hass.io [Unifi UDM API Proxy Add-on](https://github.com/Silvenga/unifi-udm-api-proxy-ha).
+
 ### Example
 
 The [unifiprotect](https://github.com/briis/unifiprotect) project is a Home Assistant integration that utilizes the Unifi Protect API to provide Home Assistant with data directly from Unifi Protect.
